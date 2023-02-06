@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        #canvas {
+            background-color: gray;
+        }
+        body::after{
+            content: '';
+            display: block;
+            width: 1px;
+            height: 400px;
+            background-color: red;
+            position: absolute;
+            top: 0;
+            left: 200px;
+        }
+        body::before{
+            content: '';
+            display: block;
+            width: 400px;
+            height: 1px;
+            background-color: red;
+            position: absolute;
+            top: 200px;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="400">
+        您的浏览器不支持canvas
+    </canvas>
+    <script src="../lib/index.js"></script>
+    <script>
+        const ctx = document.getElementById('canvas');
+
+        const gl = ctx.getContext('webgl');
+
+        // 着色器
+        const VERTEX_SHADER_SOURCE = `
+        // 传递顶点相关的数据 attribute只能在顶点着色器中使用，且会有默认值
+        attribute vec4 aPosition;
+        uniform mat4 mat;
+        attribute float deg;
+        void main() {
+            gl_Position = mat * aPosition;
+            gl_PointSize = 10.0;
+        }
+        `;
+        // 顶点着色器
+        const FRAGMENT_SHADER_SOURCE = `
+            void main() {
+                gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+            }
+        `;
+        // 片源着色器
+        
+        const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+        const aPosition = gl.getAttribLocation(program, 'aPosition')
+        const mat = gl.getUniformLocation(program, 'mat')
+
+        function getTranslateMatrix(x = 0, y = 0 ,z = 0) {
+            return new Float32Array([
+                1.0, 0.0, 0.0,0.0,
+                0.0, 1.0, 0.0,0.0,
+                0.0, 0.0, 1.0, 0.0,
+                x, y, z, 1,
+            ])
+        }
+
+        const points = new Float32Array([
+            -0.5, -0.5,
+            0.5, -0.5,
+            0.0, 0.5,
+        ])
+
+        const buffer = gl.createBuffer();
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+        gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+        gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+
+        gl.enableVertexAttribArray(aPosition);
+
+        let x = 1;
+
+        function animation() { 
+            x += 0.01;
+            if(x > 1) {
+                x = -1;
+            }
+
+            const matrix = getTranslateMatrix(x);
+            // gl.vertexAttrib1f(aPosition, x);
+            gl.uniformMatrix4fv(mat, false, matrix);
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+            requestAnimationFrame(animation)
+        }
+
+        animation();
+    </script>
+</body>
+</html>
