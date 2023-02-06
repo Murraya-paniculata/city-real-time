@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        #canvas {
+            background-color: yellow;
+            display: block;
+            margin: 50px auto 0;
+        }
+        /* body::after{
+            content: '';
+            display: block;
+            width: 1px;
+            height: 400px;
+            background-color: red;
+            position: absolute;
+            top: 0;
+            left: 200px;
+        }
+        body::before{
+            content: '';
+            display: block;
+            width: 400px;
+            height: 1px;
+            background-color: red;
+            position: absolute;
+            top: 200px;
+            left: 0;
+        } */
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="400">
+        您的浏览器不支持canvas
+    </canvas>
+    <script src="../lib/index.js"></script>
+    <script>
+        const ctx = document.getElementById('canvas');
+
+        const gl = ctx.getContext('webgl');
+
+        // 着色器
+        const VERTEX_SHADER_SOURCE = `
+        // 传递顶点相关的数据 attribute只能在顶点着色器中使用，且会有默认值
+        attribute vec4 aPosition;
+        void main() {
+            gl_Position = aPosition;
+            gl_PointSize = 10.0;
+        }
+        `;
+        // 片元着色器
+        const FRAGMENT_SHADER_SOURCE = `
+            precision mediump float;
+            // uniform vec4 uColor;
+            // uniform vec2 uColor;
+            uniform float uColor;
+            void main() {
+                // gl_FragColor = uColor;
+                // gl_FragColor = vec4(uColor.r, uColor.g, 0.0,1.0);
+                gl_FragColor = vec4(uColor, 0.0, 0.0,1.0);
+            }
+        `;
+        // 片源着色器
+        
+        const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+        const aPosition = gl.getAttribLocation(program, 'aPosition')
+        const uColor = gl.getUniformLocation(program, 'uColor');
+
+        // gl.vertexAttrib4f(aPosition, 0.5, 0.5, 0.0, 1.0);
+        // gl.vertexAttrib3f(aPosition, 0.5, 0.5, 0.0);
+        // gl.vertexAttrib2f(aPosition, 0.5, 0.5);
+
+        gl.vertexAttrib1f(aPosition, 0.0);
+        // 执行绘制
+        gl.drawArrays(gl.POINTS, 0, 1);
+
+        const point = [];
+        gl.uniform1f(uColor, 1.0);
+        // gl.uniform2f(uColor, 1.0, 0.0);
+        // gl.uniform3f(uColor, 1.0, 0.0, 0.0);
+        // gl.uniform4f(uColor, 1.0, 0.0, 0.0, 1.0);
+
+        ctx.onclick = function(ev) {
+            let x = ev.clientX;
+            let y = ev.clientY;
+
+            const domPosition = ev.target.getBoundingClientRect();
+            console.log(domPosition, ctx.offsetTop, ctx.offsetLeft);
+
+            const domx = x - domPosition.left;
+            const domy = y - domPosition.top;
+
+            const harfWidth = domPosition.width / 2;
+            const harfHeight = domPosition.height / 2;
+
+            const clickX = (domx - harfWidth) / harfWidth;
+            const clickY = (harfHeight - domy) / harfHeight;
+
+            point.push({
+                clickX, clickY
+            })
+
+            for (let index = 0; index < point.length; index++) {
+                const element = point[index];
+                gl.vertexAttrib2f(aPosition, element.clickX, element.clickY);
+                // 执行绘制
+                gl.drawArrays(gl.POINTS, 0, 1);
+            }
+        }
+
+    </script>
+</body>
+</html>
