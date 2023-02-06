@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        #canvas {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="400">
+        您的浏览器不支持canvas
+    </canvas>
+    <script src="../lib/index.js"></script>
+    <script>
+        const ctx = document.getElementById('canvas');
+
+        const gl = ctx.getContext('webgl');
+
+        // 着色器
+        const VERTEX_SHADER_SOURCE = `
+        // 传递顶点相关的数据 attribute只能在顶点着色器中使用，且会有默认值
+        attribute vec4 aPosition;
+        varying vec4 vColor;
+        void main() {
+            vColor = aPosition;
+            gl_Position = aPosition;
+            gl_PointSize = 10.0;
+        }
+        `;
+        // 顶点着色器
+        const FRAGMENT_SHADER_SOURCE = `
+            precision lowp float;
+            varying vec4 vColor;
+            void main() {
+                gl_FragColor = vColor;
+            }
+        `;
+        // 片源着色器
+        
+        const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+        const aPosition = gl.getAttribLocation(program, 'aPosition')
+
+        const points = new Float32Array([
+            -0.5, -0.5,
+            0.5, -0.5,
+            0.0, 0.5,
+        ])
+
+        const buffer = gl.createBuffer();
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+        gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+        gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+
+        gl.enableVertexAttribArray(aPosition);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    </script>
+</body>
+</html>
