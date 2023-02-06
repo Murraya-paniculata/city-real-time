@@ -50,7 +50,6 @@
         // 传递顶点相关的数据 attribute只能在顶点着色器中使用，且会有默认值
         attribute vec4 aPosition;
         uniform mat4 mat;
-        attribute float deg;
         void main() {
             gl_Position = mat * aPosition;
             gl_PointSize = 10.0;
@@ -68,7 +67,6 @@
 
         const aPosition = gl.getAttribLocation(program, 'aPosition')
         const mat = gl.getUniformLocation(program, 'mat')
-
         const points = new Float32Array([
             -0.5, -0.5,
             0.5, -0.5,
@@ -85,16 +83,26 @@
 
         gl.enableVertexAttribArray(aPosition);
 
-        let x = 1;
+        let deg = 0;
+        let transilateX = -1;
+        let scaleX = 0.1;
 
         function animation() { 
-            x += 0.01;
-            if(x > 1) {
-                x = -1;
+            deg += 0.01;
+            transilateX += 0.01;
+            scaleX += 0.01;
+            if(transilateX > 1) {
+                transilateX = -1;
             }
 
-            const matrix = getTranslateMatrix(x);
-            // gl.vertexAttrib1f(aPosition, x);
+            if(scaleX > 1.5) {
+                scaleX = 0.1;
+            }
+
+            const translate = getTranslateMatrix(transilateX);
+            const scale = getScaleMatrix(scaleX);
+            const rotate = getRotateMatrix(deg);
+            const matrix = mixMatrix(mixMatrix(translate, scale), rotate)
             gl.uniformMatrix4fv(mat, false, matrix);
             gl.drawArrays(gl.TRIANGLES, 0, 3);
 

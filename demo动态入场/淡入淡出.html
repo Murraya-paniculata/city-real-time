@@ -11,9 +11,11 @@
             padding: 0;
         }
         #canvas {
-            background-color: gray;
+            /* background-color: gray; */
+            margin: 50px auto 0;
+            display: block;
         }
-        body::after{
+        /* body::after{
             content: '';
             display: block;
             width: 1px;
@@ -32,7 +34,7 @@
             position: absolute;
             top: 200px;
             left: 0;
-        }
+        } */
     </style>
 </head>
 <body>
@@ -50,16 +52,17 @@
         // 传递顶点相关的数据 attribute只能在顶点着色器中使用，且会有默认值
         attribute vec4 aPosition;
         uniform mat4 mat;
-        attribute float deg;
         void main() {
-            gl_Position = mat * aPosition;
+            gl_Position = aPosition;
             gl_PointSize = 10.0;
         }
         `;
         // 顶点着色器
         const FRAGMENT_SHADER_SOURCE = `
+            precision lowp float;
+            uniform float uOpacity;
             void main() {
-                gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+                gl_FragColor = vec4(1.0,0.0,0.0, uOpacity);
             }
         `;
         // 片源着色器
@@ -68,11 +71,13 @@
 
         const aPosition = gl.getAttribLocation(program, 'aPosition')
         const mat = gl.getUniformLocation(program, 'mat')
-
+        const uOpacity = gl.getUniformLocation(program, 'uOpacity')
+        
         const points = new Float32Array([
-            -0.5, -0.5,
-            0.5, -0.5,
-            0.0, 0.5,
+            -1.0, -1.0,
+            1.0, -1.0,
+            -1.0, 1.0,
+            1.0, 1.0,
         ])
 
         const buffer = gl.createBuffer();
@@ -85,23 +90,43 @@
 
         gl.enableVertexAttribArray(aPosition);
 
-        let x = 1;
+        let deg = 0;
+        let transilateX = -1;
+        let scaleX = 0.1;
 
-        function animation() { 
-            x += 0.01;
-            if(x > 1) {
-                x = -1;
-            }
+        // function animation() { 
+        //     deg += 0.01;
+        //     transilateX += 0.01;
+        //     scaleX += 0.01;
+        //     if(transilateX > 1) {
+        //         transilateX = -1;
+        //     }
 
-            const matrix = getTranslateMatrix(x);
-            // gl.vertexAttrib1f(aPosition, x);
-            gl.uniformMatrix4fv(mat, false, matrix);
-            gl.drawArrays(gl.TRIANGLES, 0, 3);
+        //     if(scaleX > 1.5) {
+        //         scaleX = 0.1;
+        //     }
 
-            requestAnimationFrame(animation)
+        //     const translate = getTranslateMatrix(transilateX);
+        //     const scale = getScaleMatrix(scaleX);
+        //     const rotate = getRotateMatrix(deg);
+        //     const matrix = mixMatrix(mixMatrix(translate, scale), rotate)
+        //     // gl.uniformMatrix4fv(mat, false, matrix);
+        //     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        //     requestAnimationFrame(animation)
+        // }
+
+        let value = 1;
+        // let value = 0;
+        function run () {
+            value -= 0.01;
+            // value += 0.01;
+            gl.uniform1f(uOpacity, value);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            requestAnimationFrame(run)
         }
-
-        animation();
+        run();
     </script>
 </body>
 </html>

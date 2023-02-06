@@ -85,15 +85,12 @@
 
         gl.enableVertexAttribArray(aPosition);
 
-        let x = 1;
+        let x = 0;
 
         function animation() { 
             x += 0.01;
-            if(x > 1) {
-                x = -1;
-            }
 
-            const matrix = getTranslateMatrix(x);
+            const matrix = getRotateMatrix(x);
             // gl.vertexAttrib1f(aPosition, x);
             gl.uniformMatrix4fv(mat, false, matrix);
             gl.drawArrays(gl.TRIANGLES, 0, 3);
